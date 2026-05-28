@@ -2,7 +2,7 @@
 
 Um aplicativo web simples e delicado para registrar suas fichas de leitura — os livros que você leu, com capa, avaliação, datas e até o personagem favorito. Visual minimalista em tons pastéis, com sincronização na nuvem para acessar de qualquer dispositivo.
 
-**🔗 Acesse o site:** https://araldikarin.github.io/diario-de-leitura/
+**🔗 Acesse o site:** https://araldikarin.github.io/DiarioDeLeitura/
 
 ---
 
