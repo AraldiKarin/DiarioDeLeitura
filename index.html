@@ -7,55 +7,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #fbfafd;
-    --surface: #ffffff;
-    --ink: #44424d;
-    --ink-soft: #8b8896;
-    --ink-faint: #b6b3c0;
-    --line: #eceaf2;
-    --line-soft: #f3f1f7;
-
-    --pink: #f7d0de;
-    --pink-deep: #d98aa8;
-    --pink-soft: #fdeef4;
-    --blue: #cfdcf6;
-    --blue-deep: #88a3d8;
-    --blue-soft: #eef3fd;
-    --lav: #e2d7f4;
-    --lav-deep: #a78fce;
-    --mint: #cfeede;
-    --mint-deep: #84b89e;
-    --peach: #fbe0cf;
-    --star: #e9bd63;
-
-    --radius: 20px;
-    --radius-sm: 13px;
+    --bg: #fbfafd; --surface: #ffffff;
+    --ink: #44424d; --ink-soft: #8b8896; --ink-faint: #b6b3c0;
+    --line: #eceaf2; --line-soft: #f3f1f7;
+    --pink: #f7d0de; --pink-deep: #d98aa8; --pink-soft: #fdeef4;
+    --blue: #cfdcf6; --blue-deep: #88a3d8; --blue-soft: #eef3fd;
+    --lav: #e2d7f4; --lav-deep: #a78fce; --mint: #cfeede; --mint-deep: #84b89e;
+    --peach: #fbe0cf; --star: #e9bd63;
+    --radius: 20px; --radius-sm: 13px;
     --shadow: 0 1px 2px rgba(80,70,110,.04), 0 8px 28px rgba(120,110,150,.07);
     --shadow-hover: 0 2px 4px rgba(80,70,110,.05), 0 18px 44px rgba(120,110,150,.13);
     --sans: 'Hanken Grotesk', -apple-system, sans-serif;
     --serif: 'Instrument Serif', Georgia, serif;
   }
-
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: var(--sans);
-    font-weight: 400;
-    color: var(--ink);
-    background: var(--bg);
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-    position: relative;
+    font-family: var(--sans); font-weight: 400; color: var(--ink);
+    background: var(--bg); -webkit-font-smoothing: antialiased;
+    min-height: 100vh; position: relative;
   }
-  /* Atmosfera pastel sutil ao fundo */
   body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background:
       radial-gradient(46% 38% at 12% 2%, rgba(247,208,222,.45) 0%, transparent 60%),
       radial-gradient(42% 40% at 96% 6%, rgba(207,220,246,.42) 0%, transparent 62%),
@@ -64,149 +40,54 @@
   }
   .wrap { position: relative; z-index: 1; }
 
-  /* ── Cabeçalho ────────────────────────────────── */
-  header {
-    text-align: center;
-    padding: 64px 24px 30px;
-  }
-  .eyebrow {
-    font-size: 12px;
-    letter-spacing: .28em;
-    text-transform: uppercase;
-    color: var(--pink-deep);
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .eyebrow::before, .eyebrow::after {
-    content: ""; width: 22px; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--pink));
-  }
+  header { text-align: center; padding: 60px 24px 22px; }
+  .eyebrow { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; color: var(--pink-deep); font-weight: 500; display: inline-flex; align-items: center; gap: 10px; }
+  .eyebrow::before, .eyebrow::after { content: ""; width: 22px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink)); }
   .eyebrow::after { background: linear-gradient(90deg, var(--blue), transparent); }
-  h1.title {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: clamp(40px, 7vw, 66px);
-    line-height: 1.02;
-    margin: 14px 0 10px;
-    letter-spacing: -.01em;
-    color: #4a3f52;
-  }
+  h1.title { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 7vw, 66px); line-height: 1.02; margin: 14px 0 10px; letter-spacing: -.01em; color: #4a3f52; }
   h1.title em { font-style: italic; color: var(--lav-deep); }
   .sub { color: var(--ink-soft); font-size: 16px; font-weight: 300; margin: 0; }
   .sub b { font-weight: 500; color: var(--ink); }
 
-  /* ── Barra de ferramentas ─────────────────────── */
-  .toolbar {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 20px 24px 6px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .filters { display: flex; gap: 8px; flex-wrap: wrap; }
-  .pill {
-    font-family: var(--sans);
-    font-size: 13.5px;
-    font-weight: 400;
-    padding: 7px 15px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--ink-soft);
-    cursor: pointer;
-    transition: all .18s ease;
-  }
-  .pill:hover { border-color: var(--blue); color: var(--ink); }
-  .pill.active {
-    background: var(--pink-soft);
-    border-color: var(--pink);
-    color: var(--pink-deep);
-    font-weight: 500;
-  }
+  .banner { max-width: 720px; margin: 14px auto 0; border-radius: 14px; padding: 11px 18px; font-size: 13.5px; font-weight: 300; display: flex; gap: 10px; align-items: center; justify-content: center; }
+  .banner.local { background: var(--blue-soft); color: var(--blue-deep); border: 1px solid var(--blue); }
+  .banner b { font-weight: 600; }
 
-  .btn {
-    font-family: var(--sans);
-    font-size: 14.5px;
-    font-weight: 500;
-    border-radius: 999px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all .18s ease;
-    line-height: 1;
-  }
-  .btn-primary {
-    padding: 11px 22px;
-    color: #6a4a5a;
-    background: linear-gradient(120deg, var(--pink) 0%, var(--lav) 55%, var(--blue) 110%);
-    box-shadow: 0 6px 18px rgba(217,138,168,.28);
-  }
+  .toolbar { max-width: 1140px; margin: 0 auto; padding: 18px 24px 6px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tools-right { display: flex; align-items: center; gap: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); padding: 6px 8px 6px 14px; border-radius: 999px; }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint-deep); }
+  .chip button { font-family: var(--sans); font-size: 12.5px; border: none; background: var(--pink-soft); color: var(--pink-deep); padding: 5px 11px; border-radius: 999px; cursor: pointer; }
+  .chip button:hover { background: var(--pink); color: #fff; }
+
+  .pill { font-family: var(--sans); font-size: 13.5px; padding: 7px 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft); cursor: pointer; transition: all .18s ease; }
+  .pill:hover { border-color: var(--blue); color: var(--ink); }
+  .pill.active { background: var(--pink-soft); border-color: var(--pink); color: var(--pink-deep); font-weight: 500; }
+
+  .btn { font-family: var(--sans); font-size: 14.5px; font-weight: 500; border-radius: 999px; cursor: pointer; border: 1px solid transparent; transition: all .18s ease; line-height: 1; }
+  .btn-primary { padding: 11px 22px; color: #6a4a5a; background: linear-gradient(120deg, var(--pink) 0%, var(--lav) 55%, var(--blue) 110%); box-shadow: 0 6px 18px rgba(217,138,168,.28); }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(217,138,168,.36); }
-  .btn-ghost {
-    padding: 10px 20px;
-    background: var(--surface);
-    border-color: var(--line);
-    color: var(--ink-soft);
-  }
+  .btn-primary[disabled] { opacity: .6; cursor: default; transform: none; }
+  .btn-ghost { padding: 10px 20px; background: var(--surface); border-color: var(--line); color: var(--ink-soft); }
   .btn-ghost:hover { border-color: var(--blue); color: var(--ink); }
-  .btn-soft-pink {
-    padding: 11px 22px;
-    background: var(--pink-soft);
-    color: var(--pink-deep);
-    border-color: var(--pink);
-  }
+  .btn-soft-pink { padding: 11px 22px; background: var(--pink-soft); color: var(--pink-deep); border-color: var(--pink); }
   .btn-soft-pink:hover { background: var(--pink); color: #fff; }
 
-  /* ── Grade ────────────────────────────────────── */
   main { max-width: 1140px; margin: 0 auto; padding: 22px 24px 90px; }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
-    gap: 26px;
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 26px; }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--line-soft);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    transition: transform .25s cubic-bezier(.2,.7,.3,1), box-shadow .25s;
-    animation: rise .55s cubic-bezier(.2,.7,.3,1) both;
-  }
+  .card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; transition: transform .25s cubic-bezier(.2,.7,.3,1), box-shadow .25s; animation: rise .55s cubic-bezier(.2,.7,.3,1) both; }
   .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
   @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes pop { from { opacity: 0; transform: scale(.97) translateY(10px); } to { opacity: 1; transform: none; } }
 
-  .cover {
-    aspect-ratio: 3 / 4;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(150deg, var(--pink-soft), var(--blue-soft) 50%, var(--lav) 130%);
-    display: flex; align-items: center; justify-content: center;
-  }
+  .cover { aspect-ratio: 3 / 4; position: relative; overflow: hidden; background: linear-gradient(150deg, var(--pink-soft), var(--blue-soft) 50%, var(--lav) 130%); display: flex; align-items: center; justify-content: center; }
   .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cover .ph {
-    text-align: center; padding: 22px;
-    font-family: var(--serif);
-    color: #8a7f96;
-    font-size: 20px; line-height: 1.2;
-  }
+  .cover .ph { text-align: center; padding: 22px; font-family: var(--serif); color: #8a7f96; font-size: 20px; line-height: 1.2; }
   .cover .ph .glyph { font-size: 26px; opacity: .55; margin-bottom: 8px; }
-  .badge {
-    position: absolute; top: 12px; left: 12px;
-    font-size: 11.5px; font-weight: 500;
-    padding: 5px 11px; border-radius: 999px;
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255,255,255,.55);
-  }
+  .badge { position: absolute; top: 12px; left: 12px; font-size: 11.5px; font-weight: 500; padding: 5px 11px; border-radius: 999px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.55); }
 
   .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
   .card-title { font-family: var(--serif); font-size: 23px; line-height: 1.12; margin: 0; color: #463d50; }
@@ -216,95 +97,53 @@
   .meta .ic { opacity: .7; }
   .meta .fav b { font-weight: 500; color: var(--ink); }
   .card-actions { display: flex; gap: 8px; margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
-  .mini {
-    flex: 1; font-family: var(--sans); font-size: 13px; font-weight: 400;
-    padding: 7px 0; border-radius: 9px; cursor: pointer;
-    border: 1px solid var(--line); background: transparent; color: var(--ink-soft);
-    transition: all .16s;
-  }
+  .mini { flex: 1; font-family: var(--sans); font-size: 13px; padding: 7px 0; border-radius: 9px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--ink-soft); transition: all .16s; }
   .mini:hover { border-color: var(--blue); color: var(--ink); }
   .mini.del:hover { border-color: var(--pink); color: var(--pink-deep); }
 
-  /* ── Estado vazio ─────────────────────────────── */
   .empty { text-align: center; padding: 80px 24px; }
-  .empty .em-glyph {
-    font-size: 40px; width: 96px; height: 96px; margin: 0 auto 20px;
-    display: flex; align-items: center; justify-content: center; border-radius: 50%;
-    background: linear-gradient(140deg, var(--pink-soft), var(--blue-soft));
-    border: 1px solid var(--line);
-  }
+  .empty .em-glyph { font-size: 40px; width: 96px; height: 96px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: linear-gradient(140deg, var(--pink-soft), var(--blue-soft)); border: 1px solid var(--line); }
   .empty h2 { font-family: var(--serif); font-size: 30px; color: #4a3f52; margin: 0 0 8px; }
   .empty p { color: var(--ink-soft); font-weight: 300; margin: 0 0 24px; }
+  .loading { text-align: center; padding: 80px 24px; color: var(--ink-soft); font-weight: 300; }
 
-  /* ── Overlay / modal ──────────────────────────── */
-  .overlay {
-    position: fixed; inset: 0; z-index: 50;
-    background: rgba(74,63,82,.30);
-    backdrop-filter: blur(5px);
-    display: flex; align-items: center; justify-content: center; padding: 18px;
-    animation: fade .2s ease both;
-  }
-  .modal {
-    background: var(--surface);
-    border-radius: 24px;
-    width: min(560px, 96vw);
-    max-height: 92vh; overflow-y: auto;
-    box-shadow: 0 30px 80px rgba(74,63,82,.28);
-    animation: pop .3s cubic-bezier(.2,.7,.3,1) both;
-  }
-  .modal::-webkit-scrollbar { width: 10px; }
-  .modal::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
-  .modal-head {
-    position: sticky; top: 0; z-index: 3; background: var(--surface);
-    padding: 26px 30px 16px; border-bottom: 1px solid var(--line-soft);
-  }
-  .modal-head h2 { font-family: var(--serif); font-size: 30px; margin: 0; color: #463d50; }
-  .modal-head h2 em { color: var(--pink-deep); font-style: italic; }
-  .modal-body { padding: 24px 30px 8px; display: grid; gap: 22px; }
-  .modal-foot {
-    position: sticky; bottom: 0; background: var(--surface);
-    border-top: 1px solid var(--line-soft);
-    padding: 16px 30px 24px; display: flex; gap: 10px; justify-content: flex-end;
-  }
+  /* Auth */
+  .auth-screen { min-height: 50vh; display: flex; align-items: center; justify-content: center; padding: 30px 24px 80px; }
+  .auth-card { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow); width: min(400px, 94vw); padding: 34px 32px; animation: pop .3s cubic-bezier(.2,.7,.3,1) both; }
+  .auth-card h2 { font-family: var(--serif); font-size: 27px; margin: 0 0 4px; color: #463d50; }
+  .auth-card h2 em { font-style: italic; color: var(--pink-deep); }
+  .auth-card .ah-sub { color: var(--ink-soft); font-weight: 300; font-size: 14px; margin: 0 0 22px; }
+  .auth-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .auth-tabs button { flex: 1; font-family: var(--sans); font-size: 14px; padding: 9px 0; border-radius: 10px; border: 1px solid var(--line); background: #fcfbfe; color: var(--ink-soft); cursor: pointer; transition: all .16s; }
+  .auth-tabs button.on { background: var(--lav); border-color: var(--lav); color: #6a5690; font-weight: 500; }
+  .auth-err { font-size: 13px; margin: 4px 0 0; min-height: 18px; }
+  .auth-err.bad { color: var(--pink-deep); }
+  .auth-err.good { color: var(--mint-deep); }
 
-  label.lab {
-    display: block; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--blue-deep); font-weight: 600; margin-bottom: 9px;
-  }
-  .field {
-    width: 100%; font-family: var(--sans); font-size: 15px; font-weight: 400;
-    padding: 12px 14px; border-radius: 12px; color: var(--ink);
-    border: 1px solid var(--line); background: #fcfbfe; outline: none;
-    transition: border-color .16s, box-shadow .16s;
-  }
+  label.lab { display: block; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue-deep); font-weight: 600; margin-bottom: 9px; }
+  .field { width: 100%; font-family: var(--sans); font-size: 15px; padding: 12px 14px; border-radius: 12px; color: var(--ink); border: 1px solid var(--line); background: #fcfbfe; outline: none; transition: border-color .16s, box-shadow .16s; }
   .field::placeholder { color: var(--ink-faint); }
   .field:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
   select.field { appearance: auto; }
   .row { display: flex; gap: 14px; flex-wrap: wrap; }
   .row > div { flex: 1 1 150px; }
 
+  .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(74,63,82,.30); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 18px; animation: fade .2s ease both; }
+  .modal { background: var(--surface); border-radius: 24px; width: min(560px, 96vw); max-height: 92vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(74,63,82,.28); animation: pop .3s cubic-bezier(.2,.7,.3,1) both; }
+  .modal-head { position: sticky; top: 0; z-index: 3; background: var(--surface); padding: 26px 30px 16px; border-bottom: 1px solid var(--line-soft); }
+  .modal-head h2 { font-family: var(--serif); font-size: 30px; margin: 0; color: #463d50; }
+  .modal-head h2 em { color: var(--pink-deep); font-style: italic; }
+  .modal-body { padding: 24px 30px 8px; display: grid; gap: 22px; }
+  .modal-foot { position: sticky; bottom: 0; background: var(--surface); border-top: 1px solid var(--line-soft); padding: 16px 30px 24px; display: flex; gap: 10px; justify-content: flex-end; }
+
   .seg { display: flex; gap: 8px; }
-  .seg button {
-    flex: 1; font-family: var(--sans); font-size: 14.5px; padding: 10px 0;
-    border-radius: 11px; cursor: pointer; border: 1px solid var(--line);
-    background: #fcfbfe; color: var(--ink-soft); transition: all .16s;
-  }
+  .seg button { flex: 1; font-family: var(--sans); font-size: 14.5px; padding: 10px 0; border-radius: 11px; cursor: pointer; border: 1px solid var(--line); background: #fcfbfe; color: var(--ink-soft); transition: all .16s; }
   .seg button.on { background: var(--blue-soft); border-color: var(--blue); color: var(--blue-deep); font-weight: 500; }
 
   .cover-pick { display: flex; gap: 16px; align-items: center; }
-  .cover-thumb {
-    width: 88px; height: 118px; border-radius: 12px; flex-shrink: 0;
-    border: 1px dashed var(--line); overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(150deg, var(--pink-soft), var(--blue-soft));
-    color: var(--ink-faint); font-size: 26px;
-  }
+  .cover-thumb { width: 88px; height: 118px; border-radius: 12px; flex-shrink: 0; border: 1px dashed var(--line); overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(150deg, var(--pink-soft), var(--blue-soft)); color: var(--ink-faint); font-size: 26px; }
   .cover-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .file-label {
-    display: inline-block; font-family: var(--sans); font-size: 14px; cursor: pointer;
-    padding: 9px 16px; border-radius: 10px; border: 1px solid var(--line);
-    background: #fcfbfe; color: var(--ink); transition: all .16s;
-  }
+  .file-label { display: inline-block; font-family: var(--sans); font-size: 14px; cursor: pointer; padding: 9px 16px; border-radius: 10px; border: 1px solid var(--line); background: #fcfbfe; color: var(--ink); transition: all .16s; }
   .file-label:hover { border-color: var(--blue); }
 
   .form-stars { display: flex; align-items: center; gap: 14px; }
@@ -320,11 +159,7 @@
   footer { text-align: center; padding: 0 24px 50px; color: var(--ink-faint); font-size: 12.5px; font-weight: 300; }
   footer b { color: var(--pink-deep); font-weight: 500; }
 
-  @media (max-width: 520px) {
-    header { padding-top: 44px; }
-    .toolbar { padding-top: 8px; }
-    .modal-body, .modal-head, .modal-foot { padding-left: 20px; padding-right: 20px; }
-  }
+  @media (max-width: 520px) { header { padding-top: 40px; } .modal-body, .modal-head, .modal-foot { padding-left: 20px; padding-right: 20px; } }
 </style>
 </head>
 <body>
@@ -333,21 +168,43 @@
     <span class="eyebrow">Biblioteca pessoal</span>
     <h1 class="title">Diário de <em>Leitura</em></h1>
     <p class="sub" id="subtitle">suas fichas de leitura, guardadas com carinho</p>
+    <div id="bannerSlot"></div>
   </header>
 
-  <div class="toolbar">
-    <div class="filters" id="filters"></div>
-    <button class="btn btn-primary" id="addBtn">＋ Nova ficha</button>
+  <!-- Tela de login (modo nuvem) -->
+  <div class="auth-screen" id="authScreen" style="display:none">
+    <div class="auth-card">
+      <h2>Entrar na sua <em>estante</em></h2>
+      <p class="ah-sub">Acesse de qualquer dispositivo — suas fichas ficam sincronizadas.</p>
+      <div class="auth-tabs">
+        <button id="tabLogin" class="on">Entrar</button>
+        <button id="tabSignup">Criar conta</button>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div><label class="lab">E-mail</label><input class="field" id="authEmail" type="email" placeholder="voce@email.com" autocomplete="email"></div>
+        <div><label class="lab">Senha</label><input class="field" id="authPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      </div>
+      <p class="auth-err bad" id="authErr"></p>
+      <button class="btn btn-primary" id="authSubmit" style="width:100%;margin-top:6px">Entrar</button>
+    </div>
   </div>
 
-  <main>
-    <div class="grid" id="grid"></div>
-    <div id="emptyState"></div>
-  </main>
-
-  <footer>
-    Feito com carinho · seus dados ficam salvos <b>neste navegador</b>
-  </footer>
+  <!-- App -->
+  <div id="appArea" style="display:none">
+    <div class="toolbar">
+      <div class="filters" id="filters"></div>
+      <div class="tools-right">
+        <span id="accountChip"></span>
+        <button class="btn btn-primary" id="addBtn">＋ Nova ficha</button>
+      </div>
+    </div>
+    <main>
+      <div id="loadingState"></div>
+      <div class="grid" id="grid"></div>
+      <div id="emptyState"></div>
+    </main>
+    <footer id="footer"></footer>
+  </div>
 </div>
 
 <div id="modalRoot"></div>
@@ -355,62 +212,46 @@
 <script>
 "use strict";
 
-/* ── Armazenamento (localStorage + fallback em memória) ───────────── */
-var DB = (function () {
-  var KEY = "diario_de_leitura_v1";
-  var mem = { books: [], collections: [] };
-  return {
-    read: function () {
-      try {
-        var raw = localStorage.getItem(KEY);
-        return raw ? JSON.parse(raw) : { books: [], collections: [] };
-      } catch (e) { return mem; }
-    },
-    write: function (state) {
-      mem = state;
-      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-    }
-  };
-})();
+/* ════════════════════════════════════════════════════════════════════
+   CONFIGURAÇÃO — cole aqui os dois valores do seu projeto Supabase.
+   (Settings → API → "Project URL" e "anon public").
+   Enquanto estiverem com os textos abaixo, o site roda em MODO LOCAL.
+   ════════════════════════════════════════════════════════════════════ */
+const SUPABASE_URL = "https://fdxdzvdultvinoxtragr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_ZtKro6hxy4hRyB65tKOsLQ_bDKaIT2b";
+/* ════════════════════════════════════════════════════════════════════ */
 
-var state = DB.read();
-if (!state.books) state.books = [];
-if (!state.collections) state.collections = [];
-var filter = "__all__";
+const CONFIGURED =
+  /^https:\/\/.+\.supabase\.co\/?$/.test(SUPABASE_URL) &&
+  SUPABASE_ANON_KEY.length > 30 &&
+  window.supabase;
+
+let sb = null;
+let session = null;
+let authMode = "login";
+
+/* ── Estado ──────────────────────────────────────────────────────── */
+let books = [];
+let filter = "__all__";
+const LS_KEY = "diario_de_leitura_v1";
 
 /* ── Utilitários ─────────────────────────────────────────────────── */
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+function uuid() {
+  if (window.crypto && crypto.randomUUID) { try { return crypto.randomUUID(); } catch (e) {} }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0, v = c === "x" ? r : (r & 0x3) | 0x8; return v.toString(16);
   });
 }
-function fmtDate(str) {
-  if (!str) return "";
-  try { return new Date(str + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }); }
-  catch (e) { return str; }
-}
-function daysBetween(a, b) {
-  if (!a || !b) return null;
-  var d = Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000) + 1;
-  return d > 0 ? d : null;
-}
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function fmtDate(str) { if (!str) return ""; try { return new Date(str + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }); } catch (e) { return str; } }
+function daysBetween(a, b) { if (!a || !b) return null; var d = Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000) + 1; return d > 0 ? d : null; }
 var PASTELS = [
-  { bg: "rgba(247,208,222,.55)", fg: "#b06484" },
-  { bg: "rgba(207,220,246,.6)", fg: "#5f7bbf" },
-  { bg: "rgba(226,215,244,.6)", fg: "#8266b3" },
-  { bg: "rgba(207,238,222,.65)", fg: "#5a9079" },
+  { bg: "rgba(247,208,222,.55)", fg: "#b06484" }, { bg: "rgba(207,220,246,.6)", fg: "#5f7bbf" },
+  { bg: "rgba(226,215,244,.6)", fg: "#8266b3" }, { bg: "rgba(207,238,222,.65)", fg: "#5a9079" },
   { bg: "rgba(251,224,207,.65)", fg: "#bf8554" }
 ];
-function pastelFor(name) {
-  var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  return PASTELS[h % PASTELS.length];
-}
-function starHTML(rating) {
-  var out = "";
-  for (var i = 1; i <= 5; i++) out += '<span style="color:' + (i <= rating ? "var(--star)" : "#e4e0ec") + '">★</span>';
-  return out;
-}
+function pastelFor(name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0; return PASTELS[h % PASTELS.length]; }
+function starHTML(rating) { var o = ""; for (var i = 1; i <= 5; i++) o += '<span style="color:' + (i <= rating ? "var(--star)" : "#e4e0ec") + '">★</span>'; return o; }
 function compressImage(file, maxDim, quality) {
   maxDim = maxDim || 520; quality = quality || 0.74;
   return new Promise(function (resolve, reject) {
@@ -430,276 +271,292 @@ function compressImage(file, maxDim, quality) {
     reader.onerror = reject; reader.readAsDataURL(file);
   });
 }
-function save() { DB.write(state); }
 function allCollections() {
-  var used = state.books.filter(function (b) { return b.hasCollection && b.collection; }).map(function (b) { return b.collection; });
-  var set = {};
-  state.collections.concat(used).forEach(function (c) { if (c) set[c] = 1; });
+  var set = {}; books.forEach(function (b) { if (b.has_collection && b.collection) set[b.collection] = 1; });
   return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "pt-BR"); });
 }
 
-/* ── Renderização ────────────────────────────────────────────────── */
-function render() {
-  renderHeader();
-  renderFilters();
-  renderGrid();
+/* ── Camada de dados (nuvem ou local) ────────────────────────────── */
+const Repo = {
+  async list() {
+    if (CONFIGURED) {
+      const { data, error } = await sb.from("books").select("*").order("created_at", { ascending: false });
+      if (error) throw error; return data || [];
+    }
+    try { var s = JSON.parse(localStorage.getItem(LS_KEY)); return (s && s.books) || []; } catch (e) { return []; }
+  },
+  async upsert(book) {
+    if (CONFIGURED) {
+      var payload = {
+        id: book.id, title: book.title, author: book.author || null,
+        has_collection: !!book.has_collection, collection: book.collection || null,
+        start_date: book.start_date || null, end_date: book.end_date || null,
+        rating: book.rating || 0, cover: book.cover || null,
+        favorite_character: book.favorite_character || null
+      };
+      const { data, error } = await sb.from("books").upsert(payload, { onConflict: "id" }).select().single();
+      if (error) throw error; return data;
+    }
+    var s; try { s = JSON.parse(localStorage.getItem(LS_KEY)) || { books: [] }; } catch (e) { s = { books: [] }; }
+    if (!s.books) s.books = [];
+    var i = s.books.findIndex(function (x) { return x.id === book.id; });
+    if (i >= 0) s.books[i] = book; else s.books.unshift(book);
+    localStorage.setItem(LS_KEY, JSON.stringify(s)); return book;
+  },
+  async remove(id) {
+    if (CONFIGURED) { const { error } = await sb.from("books").delete().eq("id", id); if (error) throw error; return; }
+    var s; try { s = JSON.parse(localStorage.getItem(LS_KEY)) || { books: [] }; } catch (e) { s = { books: [] }; }
+    s.books = (s.books || []).filter(function (x) { return x.id !== id; });
+    localStorage.setItem(LS_KEY, JSON.stringify(s));
+  }
+};
+
+/* ── Inicialização ───────────────────────────────────────────────── */
+async function init() {
+  renderBanner();
+  if (CONFIGURED) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await sb.auth.getSession();
+    session = data.session;
+    sb.auth.onAuthStateChange(function (_evt, s) {
+      session = s;
+      if (s) enterApp(); else showAuth();
+    });
+    if (session) enterApp(); else showAuth();
+  } else {
+    enterApp(); // modo local
+  }
 }
 
-function renderHeader() {
-  var n = state.books.length;
-  var rated = state.books.filter(function (b) { return b.rating > 0; });
+function renderBanner() {
+  var slot = document.getElementById("bannerSlot");
+  if (!CONFIGURED) {
+    slot.innerHTML = '<div class="banner local">📌 <span><b>Modo local</b> — funcionando só neste navegador. Configure o Supabase no topo do arquivo para sincronizar entre dispositivos.</span></div>';
+  } else { slot.innerHTML = ""; }
+}
+
+/* ── Login ───────────────────────────────────────────────────────── */
+function showAuth() {
+  document.getElementById("authScreen").style.display = "flex";
+  document.getElementById("appArea").style.display = "none";
+}
+function enterApp() {
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("appArea").style.display = "block";
+  renderAccountChip();
+  renderFooter();
+  loadAndRender();
+}
+function renderAccountChip() {
+  var chip = document.getElementById("accountChip");
+  if (CONFIGURED && session) {
+    chip.innerHTML = '<span class="chip"><span class="dot"></span>' + esc(session.user.email) + ' <button id="logoutBtn">Sair</button></span>';
+    document.getElementById("logoutBtn").onclick = async function () { await sb.auth.signOut(); };
+  } else { chip.innerHTML = ""; }
+}
+function renderFooter() {
+  document.getElementById("footer").innerHTML = CONFIGURED
+    ? "Suas fichas ficam <b>sincronizadas na nuvem</b> — acesse de qualquer lugar."
+    : "Feito com carinho · seus dados ficam salvos <b>neste navegador</b>";
+}
+function setAuthMode(m) {
+  authMode = m;
+  document.getElementById("tabLogin").className = m === "login" ? "on" : "";
+  document.getElementById("tabSignup").className = m === "signup" ? "on" : "";
+  document.getElementById("authSubmit").textContent = m === "login" ? "Entrar" : "Criar conta";
+  document.getElementById("authPass").setAttribute("autocomplete", m === "login" ? "current-password" : "new-password");
+  authErr("", "");
+}
+function authErr(msg, kind) {
+  var el = document.getElementById("authErr");
+  el.textContent = msg || "";
+  el.className = "auth-err " + (kind === "good" ? "good" : "bad");
+}
+async function doAuth() {
+  var email = document.getElementById("authEmail").value.trim();
+  var pass = document.getElementById("authPass").value;
+  if (!email || !pass) { authErr("Preencha e-mail e senha.", "bad"); return; }
+  if (pass.length < 6) { authErr("A senha precisa de pelo menos 6 caracteres.", "bad"); return; }
+  var btn = document.getElementById("authSubmit");
+  btn.disabled = true; var label = btn.textContent; btn.textContent = "Aguarde…";
+  try {
+    var res;
+    if (authMode === "signup") res = await sb.auth.signUp({ email: email, password: pass });
+    else res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (res.error) throw res.error;
+    if (authMode === "signup" && !res.data.session) {
+      authErr("Conta criada! Confirme pelo e-mail e depois entre.", "good");
+      setAuthMode("login");
+    }
+    // sucesso com sessão → onAuthStateChange chama enterApp()
+  } catch (e) {
+    var m = (e && e.message) || "Erro ao entrar.";
+    if (/invalid login credentials/i.test(m)) m = "E-mail ou senha incorretos.";
+    if (/already registered|already exists/i.test(m)) m = "Esse e-mail já tem conta. Use 'Entrar'.";
+    authErr(m, "bad");
+  } finally { btn.disabled = false; btn.textContent = label; }
+}
+
+/* ── Carregar e renderizar ───────────────────────────────────────── */
+async function loadAndRender() {
+  var load = document.getElementById("loadingState");
+  load.innerHTML = '<div class="loading">Abrindo a estante…</div>';
+  document.getElementById("grid").innerHTML = "";
+  document.getElementById("emptyState").innerHTML = "";
+  try { books = await Repo.list(); }
+  catch (e) { console.error(e); load.innerHTML = '<div class="loading">Não consegui carregar seus dados.<br>' + esc((e && e.message) || "") + "</div>"; return; }
+  load.innerHTML = "";
+  render();
+}
+function render() { renderHeaderSub(); renderFilters(); renderGrid(); }
+
+function renderHeaderSub() {
+  var n = books.length, rated = books.filter(function (b) { return b.rating > 0; });
   var avg = rated.length ? (rated.reduce(function (s, b) { return s + b.rating; }, 0) / rated.length).toFixed(1) : null;
   var el = document.getElementById("subtitle");
-  if (n === 0) { el.innerHTML = "suas fichas de leitura, guardadas com carinho"; return; }
-  el.innerHTML = "<b>" + n + "</b> " + (n === 1 ? "ficha registrada" : "fichas registradas") + (avg ? "  ·  nota média <b>" + avg + " ★</b>" : "");
+  el.innerHTML = n === 0 ? "suas fichas de leitura, guardadas com carinho"
+    : "<b>" + n + "</b> " + (n === 1 ? "ficha registrada" : "fichas registradas") + (avg ? "  ·  nota média <b>" + avg + " ★</b>" : "");
 }
-
 function renderFilters() {
-  var cols = allCollections();
-  var opts = [{ k: "__all__", t: "Todas" }];
+  var cols = allCollections(), opts = [{ k: "__all__", t: "Todas" }];
   cols.forEach(function (c) { opts.push({ k: c, t: c }); });
-  if (state.books.some(function (b) { return !b.hasCollection; })) opts.push({ k: "__none__", t: "Sem coleção" });
-  var html = opts.map(function (o) {
-    return '<button class="pill ' + (filter === o.k ? "active" : "") + '" data-filter="' + esc(o.k) + '">' + esc(o.t) + "</button>";
-  }).join("");
-  document.getElementById("filters").innerHTML = state.books.length ? html : "";
+  if (books.some(function (b) { return !b.has_collection; })) opts.push({ k: "__none__", t: "Sem coleção" });
+  document.getElementById("filters").innerHTML = books.length
+    ? opts.map(function (o) { return '<button class="pill ' + (filter === o.k ? "active" : "") + '" data-filter="' + esc(o.k) + '">' + esc(o.t) + "</button>"; }).join("")
+    : "";
 }
-
 function visibleBooks() {
-  var list = state.books.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-  if (filter === "__all__") return list;
-  if (filter === "__none__") return list.filter(function (b) { return !b.hasCollection; });
-  return list.filter(function (b) { return b.hasCollection && b.collection === filter; });
+  if (filter === "__all__") return books;
+  if (filter === "__none__") return books.filter(function (b) { return !b.has_collection; });
+  return books.filter(function (b) { return b.has_collection && b.collection === filter; });
 }
-
 function renderGrid() {
-  var grid = document.getElementById("grid");
-  var empty = document.getElementById("emptyState");
-  var books = visibleBooks();
-  if (state.books.length === 0) {
+  var grid = document.getElementById("grid"), empty = document.getElementById("emptyState");
+  if (books.length === 0) {
     grid.innerHTML = "";
-    empty.innerHTML =
-      '<div class="empty"><div class="em-glyph">❀</div>' +
-      '<h2>Sua estante está vazia</h2>' +
-      '<p>Comece registrando o último livro que você leu.</p>' +
-      '<button class="btn btn-soft-pink" id="emptyAdd">＋ Criar primeira ficha</button></div>';
+    empty.innerHTML = '<div class="empty"><div class="em-glyph">❀</div><h2>Sua estante está vazia</h2><p>Comece registrando o último livro que você leu.</p><button class="btn btn-soft-pink" id="emptyAdd">＋ Criar primeira ficha</button></div>';
     document.getElementById("emptyAdd").onclick = function () { openForm(null); };
     return;
   }
   empty.innerHTML = "";
-  grid.innerHTML = books.map(function (b, i) {
-    var dur = daysBetween(b.startDate, b.endDate);
-    var badge = "";
-    if (b.hasCollection && b.collection) {
-      var p = pastelFor(b.collection);
-      badge = '<span class="badge" style="background:' + p.bg + ';color:' + p.fg + '">' + esc(b.collection) + "</span>";
-    }
-    var coverInner = b.cover
-      ? '<img src="' + b.cover + '" alt="' + esc(b.title) + '">'
-      : '<div class="ph"><div class="glyph">❦</div>' + esc(b.title) + "</div>";
-    var dates = "";
-    if (b.startDate || b.endDate) {
-      dates = '<div><span class="ic">⌖</span> ' + (b.startDate ? fmtDate(b.startDate) : "?") + " — " +
-        (b.endDate ? fmtDate(b.endDate) : "lendo") + (dur ? "  ·  " + dur + (dur === 1 ? " dia" : " dias") : "") + "</div>";
-    }
-    var fav = b.favoriteCharacter ? '<div class="fav"><span class="ic">♡</span> favorito: <b>' + esc(b.favoriteCharacter) + "</b></div>" : "";
-    return (
-      '<article class="card" style="animation-delay:' + Math.min(i * 55, 440) + 'ms">' +
-        '<div class="cover">' + coverInner + badge + "</div>" +
-        '<div class="card-body">' +
-          '<h3 class="card-title">' + esc(b.title) + "</h3>" +
-          (b.author ? '<p class="card-author">' + esc(b.author) + "</p>" : "") +
-          '<div class="stars">' + starHTML(b.rating || 0) + "</div>" +
-          ((dates || fav) ? '<div class="meta">' + dates + fav + "</div>" : "") +
-          '<div class="card-actions">' +
-            '<button class="mini" data-edit="' + b.id + '">Editar</button>' +
-            '<button class="mini del" data-del="' + b.id + '">Remover</button>' +
-          "</div>" +
-        "</div>" +
-      "</article>"
-    );
+  grid.innerHTML = visibleBooks().map(function (b, i) {
+    var dur = daysBetween(b.start_date, b.end_date), badge = "";
+    if (b.has_collection && b.collection) { var p = pastelFor(b.collection); badge = '<span class="badge" style="background:' + p.bg + ';color:' + p.fg + '">' + esc(b.collection) + "</span>"; }
+    var coverInner = b.cover ? '<img src="' + b.cover + '" alt="' + esc(b.title) + '">' : '<div class="ph"><div class="glyph">❦</div>' + esc(b.title) + "</div>";
+    var dates = (b.start_date || b.end_date) ? '<div><span class="ic">⌖</span> ' + (b.start_date ? fmtDate(b.start_date) : "?") + " — " + (b.end_date ? fmtDate(b.end_date) : "lendo") + (dur ? "  ·  " + dur + (dur === 1 ? " dia" : " dias") : "") + "</div>" : "";
+    var fav = b.favorite_character ? '<div class="fav"><span class="ic">♡</span> favorito: <b>' + esc(b.favorite_character) + "</b></div>" : "";
+    return '<article class="card" style="animation-delay:' + Math.min(i * 55, 440) + 'ms"><div class="cover">' + coverInner + badge + '</div><div class="card-body"><h3 class="card-title">' + esc(b.title) + "</h3>" + (b.author ? '<p class="card-author">' + esc(b.author) + "</p>" : "") + '<div class="stars">' + starHTML(b.rating || 0) + "</div>" + ((dates || fav) ? '<div class="meta">' + dates + fav + "</div>" : "") + '<div class="card-actions"><button class="mini" data-edit="' + b.id + '">Editar</button><button class="mini del" data-del="' + b.id + '">Remover</button></div></div></article>';
   }).join("");
 }
 
 /* ── Formulário ──────────────────────────────────────────────────── */
 var form = null;
-
 function openForm(book) {
-  form = Object.assign({
-    id: null, title: "", author: "", hasCollection: false, collection: "",
-    startDate: "", endDate: "", rating: 0, cover: "", favoriteCharacter: "", createdAt: null, _newCol: ""
-  }, book || {});
-
+  form = Object.assign({ id: null, title: "", author: "", has_collection: false, collection: "", start_date: "", end_date: "", rating: 0, cover: "", favorite_character: "", created_at: null }, book || {});
   var cols = allCollections();
-  var root = document.getElementById("modalRoot");
-  root.innerHTML =
-    '<div class="overlay" id="ov">' +
-      '<div class="modal" id="md">' +
-        '<div class="modal-head"><h2>' + (book ? "Editar <em>ficha</em>" : "Nova <em>ficha</em>") + "</h2></div>" +
-        '<div class="modal-body">' +
+  document.getElementById("modalRoot").innerHTML =
+    '<div class="overlay" id="ov"><div class="modal"><div class="modal-head"><h2>' + (book ? "Editar <em>ficha</em>" : "Nova <em>ficha</em>") + '</h2></div><div class="modal-body">' +
+      '<div><label class="lab">Capa do livro</label><div class="cover-pick"><div class="cover-thumb" id="thumb">' + (form.cover ? '<img src="' + form.cover + '">' : "❦") + '</div><div style="display:flex;flex-direction:column;gap:8px"><label class="file-label">' + (form.cover ? "Trocar imagem" : "Enviar imagem") + '<input type="file" accept="image/*" id="fileInput" style="display:none"></label>' + (form.cover ? '<button class="mini del" id="rmCover" style="flex:none;padding:8px 14px">Remover capa</button>' : "") + '</div></div></div>' +
+      '<div><label class="lab">Título *</label><input class="field" id="f_title" placeholder="Ex.: Dom Casmurro" value="' + esc(form.title) + '"></div>' +
+      '<div><label class="lab">Autor</label><input class="field" id="f_author" placeholder="Ex.: Machado de Assis" value="' + esc(form.author) + '"></div>' +
+      '<div><label class="lab">Faz parte de uma coleção?</label><div class="seg"><button id="col_yes" class="' + (form.has_collection ? "on" : "") + '">Sim</button><button id="col_no" class="' + (!form.has_collection ? "on" : "") + '">Não</button></div><div id="colArea" style="margin-top:12px;' + (form.has_collection ? "" : "display:none") + '">' + (cols.length ? '<select class="field" id="f_colSel" style="margin-bottom:8px"><option value="">— escolher coleção existente —</option>' + cols.map(function (c) { return '<option value="' + esc(c) + '"' + (c === form.collection ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + "</select>" : "") + '<input class="field" id="f_colNew" placeholder="' + (cols.length ? "…ou cadastrar uma nova coleção" : "Nome da coleção (ex.: Senhor dos Anéis)") + '"></div></div>' +
+      '<div class="row"><div><label class="lab">Início da leitura</label><input type="date" class="field" id="f_start" value="' + esc(form.start_date) + '"></div><div><label class="lab">Fim da leitura</label><input type="date" class="field" id="f_end" value="' + esc(form.end_date) + '"></div></div>' +
+      '<div><label class="lab">Avaliação</label><div class="form-stars" id="formStars"><div id="starRow"></div><span class="star-note" id="starNote"></span></div></div>' +
+      '<div><label class="lab">Personagem favorito</label><input class="field" id="f_fav" placeholder="Ex.: Capitu" value="' + esc(form.favorite_character) + '"></div>' +
+    '</div><div class="modal-foot"><button class="btn btn-ghost" id="cancelBtn">Cancelar</button><button class="btn btn-primary" id="saveBtn">' + (book ? "Salvar alterações" : "Salvar ficha") + "</button></div></div></div>";
 
-          '<div><label class="lab">Capa do livro</label><div class="cover-pick">' +
-            '<div class="cover-thumb" id="thumb">' + (form.cover ? '<img src="' + form.cover + '">' : "❦") + "</div>" +
-            '<div style="display:flex;flex-direction:column;gap:8px">' +
-              '<label class="file-label">' + (form.cover ? "Trocar imagem" : "Enviar imagem") +
-                '<input type="file" accept="image/*" id="fileInput" style="display:none"></label>' +
-              (form.cover ? '<button class="mini del" id="rmCover" style="flex:none;padding:8px 14px">Remover capa</button>' : "") +
-            "</div></div></div>" +
-
-          '<div><label class="lab">Título *</label><input class="field" id="f_title" placeholder="Ex.: Dom Casmurro" value="' + esc(form.title) + '"></div>' +
-          '<div><label class="lab">Autor</label><input class="field" id="f_author" placeholder="Ex.: Machado de Assis" value="' + esc(form.author) + '"></div>' +
-
-          '<div><label class="lab">Faz parte de uma coleção?</label>' +
-            '<div class="seg"><button id="col_yes" class="' + (form.hasCollection ? "on" : "") + '">Sim</button>' +
-            '<button id="col_no" class="' + (!form.hasCollection ? "on" : "") + '">Não</button></div>' +
-            '<div id="colArea" style="margin-top:12px;' + (form.hasCollection ? "" : "display:none") + '">' +
-              (cols.length ? '<select class="field" id="f_colSel" style="margin-bottom:8px"><option value="">— escolher coleção existente —</option>' +
-                cols.map(function (c) { return '<option value="' + esc(c) + '"' + (c === form.collection ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + "</select>" : "") +
-              '<input class="field" id="f_colNew" placeholder="' + (cols.length ? "…ou cadastrar uma nova coleção" : "Nome da coleção (ex.: Senhor dos Anéis)") + '">' +
-            "</div>" +
-          "</div>" +
-
-          '<div class="row">' +
-            '<div><label class="lab">Início da leitura</label><input type="date" class="field" id="f_start" value="' + esc(form.startDate) + '"></div>' +
-            '<div><label class="lab">Fim da leitura</label><input type="date" class="field" id="f_end" value="' + esc(form.endDate) + '"></div>' +
-          "</div>" +
-
-          '<div><label class="lab">Avaliação</label><div class="form-stars" id="formStars">' +
-            '<div id="starRow"></div><span class="star-note" id="starNote"></span></div></div>' +
-
-          '<div><label class="lab">Personagem favorito</label><input class="field" id="f_fav" placeholder="Ex.: Capitu" value="' + esc(form.favoriteCharacter) + '"></div>' +
-
-        "</div>" +
-        '<div class="modal-foot">' +
-          '<button class="btn btn-ghost" id="cancelBtn">Cancelar</button>' +
-          '<button class="btn btn-primary" id="saveBtn">' + (book ? "Salvar alterações" : "Salvar ficha") + "</button>" +
-        "</div>" +
-      "</div>" +
-    "</div>";
-
-  // eventos
   document.getElementById("ov").addEventListener("click", function (e) { if (e.target.id === "ov") closeForm(); });
   document.getElementById("cancelBtn").onclick = closeForm;
   document.getElementById("saveBtn").onclick = submitForm;
-  document.getElementById("col_yes").onclick = function () { setCollectionMode(true); };
-  document.getElementById("col_no").onclick = function () { setCollectionMode(false); };
+  document.getElementById("col_yes").onclick = function () { setColMode(true); };
+  document.getElementById("col_no").onclick = function () { setColMode(false); };
   document.getElementById("fileInput").onchange = handleImage;
-  var rm = document.getElementById("rmCover");
-  if (rm) rm.onclick = function () { form.cover = ""; openForm(form); };
-  document.getElementById("f_start").value = form.startDate || "";
-  document.getElementById("f_end").value = form.endDate || "";
+  var rm = document.getElementById("rmCover"); if (rm) rm.onclick = function () { form.cover = ""; openForm(form); };
+  document.getElementById("f_start").value = form.start_date || "";
+  document.getElementById("f_end").value = form.end_date || "";
   renderFormStars(form.rating);
   setTimeout(function () { document.getElementById("f_title").focus(); }, 50);
 }
-
-function setCollectionMode(on) {
-  form.hasCollection = on;
-  document.getElementById("col_yes").className = on ? "on" : "";
-  document.getElementById("col_no").className = on ? "" : "on";
-  document.getElementById("colArea").style.display = on ? "" : "none";
-}
-
+function setColMode(on) { form.has_collection = on; document.getElementById("col_yes").className = on ? "on" : ""; document.getElementById("col_no").className = on ? "" : "on"; document.getElementById("colArea").style.display = on ? "" : "none"; }
 function renderFormStars(displayVal) {
   var row = document.getElementById("starRow");
-  var note = document.getElementById("starNote");
   row.innerHTML = "";
-  for (var i = 1; i <= 5; i++) {
-    (function (n) {
-      var s = document.createElement("span");
-      s.className = "s" + (n <= displayVal ? " fill" : "");
-      s.textContent = "★";
-      s.onmouseenter = function () { paintStars(n); };
-      s.onmouseleave = function () { paintStars(form.rating); };
-      s.onclick = function () { form.rating = (form.rating === n ? 0 : n); paintStars(form.rating); };
-      row.appendChild(s);
-    })(i);
-  }
-  note.textContent = form.rating ? form.rating + " de 5" : "toque nas estrelas";
-}
-function paintStars(val) {
-  var nodes = document.querySelectorAll("#starRow .s");
-  nodes.forEach(function (el, idx) { el.className = "s" + (idx < val ? " fill" : ""); });
+  for (var i = 1; i <= 5; i++) (function (n) {
+    var s = document.createElement("span"); s.className = "s" + (n <= displayVal ? " fill" : ""); s.textContent = "★";
+    s.onmouseenter = function () { paintStars(n); };
+    s.onmouseleave = function () { paintStars(form.rating); };
+    s.onclick = function () { form.rating = form.rating === n ? 0 : n; paintStars(form.rating); };
+    row.appendChild(s);
+  })(i);
   document.getElementById("starNote").textContent = form.rating ? form.rating + " de 5" : "toque nas estrelas";
 }
-
-function handleImage(e) {
-  var file = e.target.files && e.target.files[0];
-  if (!file) return;
-  var label = document.querySelector(".file-label");
-  var prev = label.firstChild ? label.childNodes[0].nodeValue : "";
-  label.childNodes[0].nodeValue = "Processando…";
-  compressImage(file).then(function (data) {
-    form.cover = data;
-    document.getElementById("thumb").innerHTML = '<img src="' + data + '">';
-    openForm(form); // re-render para mostrar botão de remover
-  }).catch(function () { alert("Não consegui processar essa imagem."); label.childNodes[0].nodeValue = prev; });
+function paintStars(val) {
+  document.querySelectorAll("#starRow .s").forEach(function (el, idx) { el.className = "s" + (idx < val ? " fill" : ""); });
+  document.getElementById("starNote").textContent = form.rating ? form.rating + " de 5" : "toque nas estrelas";
 }
-
+function handleImage(e) {
+  var file = e.target.files && e.target.files[0]; if (!file) return;
+  var label = document.querySelector(".file-label"); label.childNodes[0].nodeValue = "Processando…";
+  compressImage(file).then(function (data) { form.cover = data; document.getElementById("thumb").innerHTML = '<img src="' + data + '">'; openForm(form); })
+    .catch(function () { alert("Não consegui processar essa imagem."); });
+}
 function closeForm() { document.getElementById("modalRoot").innerHTML = ""; form = null; }
-
-function submitForm() {
+async function submitForm() {
   var title = document.getElementById("f_title").value.trim();
   if (!title) { alert("Dê um título ao livro para salvar a ficha."); return; }
   var sel = document.getElementById("f_colSel");
   var colNew = document.getElementById("f_colNew").value.trim();
-  var collection = form.hasCollection ? (colNew || (sel ? sel.value : "")).trim() : "";
+  var collection = form.has_collection ? (colNew || (sel ? sel.value : "")).trim() : "";
   var book = {
-    id: form.id || uid(),
-    title: title,
+    id: form.id || uuid(), title: title,
     author: document.getElementById("f_author").value.trim(),
-    hasCollection: form.hasCollection && !!collection,
-    collection: collection,
-    startDate: document.getElementById("f_start").value,
-    endDate: document.getElementById("f_end").value,
-    rating: form.rating,
-    cover: form.cover,
-    favoriteCharacter: document.getElementById("f_fav").value.trim(),
-    createdAt: form.createdAt || Date.now()
+    has_collection: form.has_collection && !!collection, collection: collection,
+    start_date: document.getElementById("f_start").value || "",
+    end_date: document.getElementById("f_end").value || "",
+    rating: form.rating || 0, cover: form.cover || "",
+    favorite_character: document.getElementById("f_fav").value.trim(),
+    created_at: form.created_at || new Date().toISOString()
   };
-  var idx = -1;
-  for (var i = 0; i < state.books.length; i++) if (state.books[i].id === book.id) idx = i;
-  if (idx >= 0) state.books[idx] = book; else state.books.push(book);
-  if (book.hasCollection && book.collection && state.collections.indexOf(book.collection) < 0)
-    state.collections.push(book.collection);
-  save(); closeForm(); render();
+  var btn = document.getElementById("saveBtn"); btn.disabled = true; btn.textContent = "Salvando…";
+  try {
+    var saved = await Repo.upsert(book);
+    var merged = Object.assign({}, book, saved || {});
+    var idx = books.findIndex(function (x) { return x.id === merged.id; });
+    if (idx >= 0) books[idx] = merged; else books.unshift(merged);
+    books.sort(function (a, b) { return (b.created_at || "").localeCompare(a.created_at || ""); });
+    if (merged.has_collection && merged.collection && filter !== "__all__" && filter !== merged.collection) filter = "__all__";
+    closeForm(); render();
+  } catch (e) { console.error(e); alert("Não consegui salvar: " + ((e && e.message) || e)); btn.disabled = false; btn.textContent = "Salvar ficha"; }
 }
 
 /* ── Exclusão ────────────────────────────────────────────────────── */
 function confirmDelete(id) {
-  var b = state.books.filter(function (x) { return x.id === id; })[0];
-  if (!b) return;
+  var b = books.filter(function (x) { return x.id === id; })[0]; if (!b) return;
   var root = document.getElementById("modalRoot");
-  root.innerHTML =
-    '<div class="overlay" id="ovd"><div class="modal" style="width:auto"><div class="confirm">' +
-      "<h3>Remover ficha?</h3>" +
-      "<p>“" + esc(b.title) + "” será apagada para sempre.</p>" +
-      '<div style="display:flex;gap:10px;justify-content:center">' +
-        '<button class="btn btn-ghost" id="dCancel">Cancelar</button>' +
-        '<button class="btn btn-soft-pink" id="dOk">Remover</button>' +
-      "</div></div></div></div>";
+  root.innerHTML = '<div class="overlay" id="ovd"><div class="modal" style="width:auto"><div class="confirm"><h3>Remover ficha?</h3><p>“' + esc(b.title) + '” será apagada para sempre.</p><div style="display:flex;gap:10px;justify-content:center"><button class="btn btn-ghost" id="dCancel">Cancelar</button><button class="btn btn-soft-pink" id="dOk">Remover</button></div></div></div></div>';
   document.getElementById("ovd").addEventListener("click", function (e) { if (e.target.id === "ovd") root.innerHTML = ""; });
   document.getElementById("dCancel").onclick = function () { root.innerHTML = ""; };
-  document.getElementById("dOk").onclick = function () {
-    state.books = state.books.filter(function (x) { return x.id !== id; });
-    save(); root.innerHTML = ""; render();
+  document.getElementById("dOk").onclick = async function () {
+    try { await Repo.remove(id); books = books.filter(function (x) { return x.id !== id; }); root.innerHTML = ""; render(); }
+    catch (e) { console.error(e); alert("Não consegui remover: " + ((e && e.message) || e)); }
   };
 }
 
-/* ── Eventos globais ─────────────────────────────────────────────── */
+/* ── Eventos ─────────────────────────────────────────────────────── */
+document.getElementById("tabLogin").onclick = function () { setAuthMode("login"); };
+document.getElementById("tabSignup").onclick = function () { setAuthMode("signup"); };
+document.getElementById("authSubmit").onclick = doAuth;
+document.getElementById("authPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doAuth(); });
 document.getElementById("addBtn").onclick = function () { openForm(null); };
-document.getElementById("filters").addEventListener("click", function (e) {
-  var p = e.target.closest("[data-filter]"); if (!p) return;
-  filter = p.getAttribute("data-filter"); render();
-});
+document.getElementById("filters").addEventListener("click", function (e) { var p = e.target.closest("[data-filter]"); if (!p) return; filter = p.getAttribute("data-filter"); render(); });
 document.getElementById("grid").addEventListener("click", function (e) {
-  var ed = e.target.closest("[data-edit]");
-  var dl = e.target.closest("[data-del]");
-  if (ed) { var b = state.books.filter(function (x) { return x.id === ed.getAttribute("data-edit"); })[0]; if (b) openForm(b); }
-  else if (dl) { confirmDelete(dl.getAttribute("data-del")); }
+  var ed = e.target.closest("[data-edit]"), dl = e.target.closest("[data-del]");
+  if (ed) { var b = books.filter(function (x) { return x.id === ed.getAttribute("data-edit"); })[0]; if (b) openForm(b); }
+  else if (dl) confirmDelete(dl.getAttribute("data-del"));
 });
 document.addEventListener("keydown", function (e) { if (e.key === "Escape") document.getElementById("modalRoot").innerHTML = ""; });
 
-render();
+init();
 </script>
 </body>
 </html>
