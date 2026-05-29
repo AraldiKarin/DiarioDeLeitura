@@ -56,6 +56,16 @@
   .toolbar { max-width: 1140px; margin: 0 auto; padding: 18px 24px 6px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
   .filters { display: flex; gap: 8px; flex-wrap: wrap; }
   .tools-right { display: flex; align-items: center; gap: 12px; }
+  .search-wrap { position: relative; flex: 1 1 280px; max-width: 420px; }
+  .search-ic { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); font-size: 18px; pointer-events: none; }
+  .search-input { width: 100%; font-family: var(--sans); font-size: 14.5px; padding: 10px 16px 10px 40px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); outline: none; transition: border-color .16s, box-shadow .16s; }
+  .search-input::placeholder { color: var(--ink-faint); }
+  .search-input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
+  .filterbar { max-width: 1140px; margin: 0 auto; padding: 14px 24px 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .active-genre { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--lav-deep); background: var(--lav); border-radius: 999px; padding: 5px 8px 5px 14px; }
+  .active-genre b { font-weight: 600; }
+  .active-genre button { font-family: var(--sans); border: none; background: rgba(255,255,255,.6); color: var(--lav-deep); width: 20px; height: 20px; border-radius: 50%; cursor: pointer; line-height: 1; }
+  .active-genre button:hover { background: #fff; }
   .chip { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); padding: 6px 8px 6px 14px; border-radius: 999px; }
   .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint-deep); }
   .chip button { font-family: var(--sans); font-size: 12.5px; border: none; background: var(--pink-soft); color: var(--pink-deep); padding: 5px 11px; border-radius: 999px; cursor: pointer; }
@@ -92,6 +102,9 @@
   .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
   .card-title { font-family: var(--serif); font-size: 23px; line-height: 1.12; margin: 0; color: #463d50; }
   .card-author { font-size: 14px; color: var(--ink-soft); font-weight: 300; margin: 2px 0 0; }
+  .genre-tag { display: inline-block; margin-top: 9px; font-family: var(--sans); font-size: 11.5px; font-weight: 500; padding: 4px 11px; border-radius: 999px; border: none; cursor: pointer; transition: transform .12s; }
+  .genre-tag:hover { transform: translateY(-1px); }
+  .note { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--ink-soft); font-style: italic; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   .stars { letter-spacing: 2px; font-size: 17px; margin: 11px 0 0; line-height: 1; }
   .meta { font-size: 12.5px; color: var(--ink-soft); font-weight: 300; line-height: 1.7; margin-top: 12px; }
   .meta .ic { opacity: .7; }
@@ -125,6 +138,7 @@
   .field::placeholder { color: var(--ink-faint); }
   .field:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
   select.field { appearance: auto; }
+  textarea.field { font-family: var(--sans); line-height: 1.55; resize: vertical; min-height: 84px; }
   .row { display: flex; gap: 14px; flex-wrap: wrap; }
   .row > div { flex: 1 1 150px; }
 
@@ -192,11 +206,18 @@
   <!-- App -->
   <div id="appArea" style="display:none">
     <div class="toolbar">
-      <div class="filters" id="filters"></div>
+      <div class="search-wrap">
+        <span class="search-ic">⌕</span>
+        <input id="searchInput" class="search-input" type="search" placeholder="Buscar por título, autor, gênero…" autocomplete="off">
+      </div>
       <div class="tools-right">
         <span id="accountChip"></span>
         <button class="btn btn-primary" id="addBtn">＋ Nova ficha</button>
       </div>
+    </div>
+    <div class="filterbar">
+      <div class="filters" id="filters"></div>
+      <span id="genreActive"></span>
     </div>
     <main>
       <div id="loadingState"></div>
@@ -233,6 +254,8 @@ let authMode = "login";
 /* ── Estado ──────────────────────────────────────────────────────── */
 let books = [];
 let filter = "__all__";
+let search = "";
+let genreFilter = "";
 const LS_KEY = "diario_de_leitura_v1";
 
 /* ── Utilitários ─────────────────────────────────────────────────── */
@@ -275,6 +298,10 @@ function allCollections() {
   var set = {}; books.forEach(function (b) { if (b.has_collection && b.collection) set[b.collection] = 1; });
   return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "pt-BR"); });
 }
+function allGenres() {
+  var set = {}; books.forEach(function (b) { if (b.genre) set[b.genre] = 1; });
+  return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "pt-BR"); });
+}
 
 /* ── Camada de dados (nuvem ou local) ────────────────────────────── */
 const Repo = {
@@ -292,7 +319,8 @@ const Repo = {
         has_collection: !!book.has_collection, collection: book.collection || null,
         start_date: book.start_date || null, end_date: book.end_date || null,
         rating: book.rating || 0, cover: book.cover || null,
-        favorite_character: book.favorite_character || null
+        favorite_character: book.favorite_character || null,
+        genre: book.genre || null, notes: book.notes || null
       };
       const { data, error } = await sb.from("books").upsert(payload, { onConflict: "id" }).select().single();
       if (error) throw error; return data;
@@ -424,11 +452,22 @@ function renderFilters() {
   document.getElementById("filters").innerHTML = books.length
     ? opts.map(function (o) { return '<button class="pill ' + (filter === o.k ? "active" : "") + '" data-filter="' + esc(o.k) + '">' + esc(o.t) + "</button>"; }).join("")
     : "";
+  var ga = document.getElementById("genreActive");
+  ga.innerHTML = genreFilter ? '<span class="active-genre">Gênero: <b>' + esc(genreFilter) + '</b> <button id="clearGenre" title="Limpar">✕</button></span>' : "";
+  var cg = document.getElementById("clearGenre"); if (cg) cg.onclick = function () { genreFilter = ""; render(); };
 }
 function visibleBooks() {
-  if (filter === "__all__") return books;
-  if (filter === "__none__") return books.filter(function (b) { return !b.has_collection; });
-  return books.filter(function (b) { return b.has_collection && b.collection === filter; });
+  var q = (search || "").trim().toLowerCase();
+  return books.filter(function (b) {
+    if (filter === "__none__") { if (b.has_collection) return false; }
+    else if (filter !== "__all__") { if (!(b.has_collection && b.collection === filter)) return false; }
+    if (genreFilter && (b.genre || "") !== genreFilter) return false;
+    if (q) {
+      var hay = [b.title, b.author, b.genre, b.collection, b.favorite_character, b.notes].join("  ").toLowerCase();
+      if (hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
 }
 function renderGrid() {
   var grid = document.getElementById("grid"), empty = document.getElementById("emptyState");
@@ -438,22 +477,33 @@ function renderGrid() {
     document.getElementById("emptyAdd").onclick = function () { openForm(null); };
     return;
   }
+  var list = visibleBooks();
+  if (list.length === 0) {
+    grid.innerHTML = "";
+    empty.innerHTML = '<div class="empty"><div class="em-glyph">⌕</div><h2>Nenhuma ficha encontrada</h2><p>Tente outro termo ou limpe os filtros.</p><button class="btn btn-soft-pink" id="clearAll">Limpar busca e filtros</button></div>';
+    document.getElementById("clearAll").onclick = function () { search = ""; filter = "__all__"; genreFilter = ""; var si = document.getElementById("searchInput"); if (si) si.value = ""; render(); };
+    return;
+  }
   empty.innerHTML = "";
-  grid.innerHTML = visibleBooks().map(function (b, i) {
+  grid.innerHTML = list.map(function (b, i) {
     var dur = daysBetween(b.start_date, b.end_date), badge = "";
     if (b.has_collection && b.collection) { var p = pastelFor(b.collection); badge = '<span class="badge" style="background:' + p.bg + ';color:' + p.fg + '">' + esc(b.collection) + "</span>"; }
     var coverInner = b.cover ? '<img src="' + b.cover + '" alt="' + esc(b.title) + '">' : '<div class="ph"><div class="glyph">❦</div>' + esc(b.title) + "</div>";
+    var genreTag = "";
+    if (b.genre) { var g = pastelFor(b.genre); genreTag = '<button class="genre-tag" data-genre="' + esc(b.genre) + '" style="background:' + g.bg + ';color:' + g.fg + '">' + esc(b.genre) + "</button>"; }
     var dates = (b.start_date || b.end_date) ? '<div><span class="ic">⌖</span> ' + (b.start_date ? fmtDate(b.start_date) : "?") + " — " + (b.end_date ? fmtDate(b.end_date) : "lendo") + (dur ? "  ·  " + dur + (dur === 1 ? " dia" : " dias") : "") + "</div>" : "";
     var fav = b.favorite_character ? '<div class="fav"><span class="ic">♡</span> favorito: <b>' + esc(b.favorite_character) + "</b></div>" : "";
-    return '<article class="card" style="animation-delay:' + Math.min(i * 55, 440) + 'ms"><div class="cover">' + coverInner + badge + '</div><div class="card-body"><h3 class="card-title">' + esc(b.title) + "</h3>" + (b.author ? '<p class="card-author">' + esc(b.author) + "</p>" : "") + '<div class="stars">' + starHTML(b.rating || 0) + "</div>" + ((dates || fav) ? '<div class="meta">' + dates + fav + "</div>" : "") + '<div class="card-actions"><button class="mini" data-edit="' + b.id + '">Editar</button><button class="mini del" data-del="' + b.id + '">Remover</button></div></div></article>';
+    var notes = b.notes ? '<div class="note">' + esc(b.notes) + "</div>" : "";
+    return '<article class="card" style="animation-delay:' + Math.min(i * 55, 440) + 'ms"><div class="cover">' + coverInner + badge + '</div><div class="card-body"><h3 class="card-title">' + esc(b.title) + "</h3>" + (b.author ? '<p class="card-author">' + esc(b.author) + "</p>" : "") + genreTag + '<div class="stars">' + starHTML(b.rating || 0) + "</div>" + ((dates || fav || notes) ? '<div class="meta">' + dates + fav + notes + "</div>" : "") + '<div class="card-actions"><button class="mini" data-edit="' + b.id + '">Editar</button><button class="mini del" data-del="' + b.id + '">Remover</button></div></div></article>';
   }).join("");
 }
 
 /* ── Formulário ──────────────────────────────────────────────────── */
 var form = null;
 function openForm(book) {
-  form = Object.assign({ id: null, title: "", author: "", has_collection: false, collection: "", start_date: "", end_date: "", rating: 0, cover: "", favorite_character: "", created_at: null }, book || {});
+  form = Object.assign({ id: null, title: "", author: "", has_collection: false, collection: "", start_date: "", end_date: "", rating: 0, cover: "", favorite_character: "", genre: "", notes: "", created_at: null }, book || {});
   var cols = allCollections();
+  var genres = allGenres();
   document.getElementById("modalRoot").innerHTML =
     '<div class="overlay" id="ov"><div class="modal"><div class="modal-head"><h2>' + (book ? "Editar <em>ficha</em>" : "Nova <em>ficha</em>") + '</h2></div><div class="modal-body">' +
       '<div><label class="lab">Capa do livro</label><div class="cover-pick"><div class="cover-thumb" id="thumb">' + (form.cover ? '<img src="' + form.cover + '">' : "❦") + '</div><div style="display:flex;flex-direction:column;gap:8px"><label class="file-label">' + (form.cover ? "Trocar imagem" : "Enviar imagem") + '<input type="file" accept="image/*" id="fileInput" style="display:none"></label>' + (form.cover ? '<button class="mini del" id="rmCover" style="flex:none;padding:8px 14px">Remover capa</button>' : "") + '</div></div></div>' +
@@ -463,6 +513,8 @@ function openForm(book) {
       '<div class="row"><div><label class="lab">Início da leitura</label><input type="date" class="field" id="f_start" value="' + esc(form.start_date) + '"></div><div><label class="lab">Fim da leitura</label><input type="date" class="field" id="f_end" value="' + esc(form.end_date) + '"></div></div>' +
       '<div><label class="lab">Avaliação</label><div class="form-stars" id="formStars"><div id="starRow"></div><span class="star-note" id="starNote"></span></div></div>' +
       '<div><label class="lab">Personagem favorito</label><input class="field" id="f_fav" placeholder="Ex.: Capitu" value="' + esc(form.favorite_character) + '"></div>' +
+      '<div><label class="lab">Gênero</label><input class="field" id="f_genre" list="genreList" placeholder="Ex.: Romance, Fantasia, Suspense" value="' + esc(form.genre) + '"><datalist id="genreList">' + genres.map(function (g) { return '<option value="' + esc(g) + '">'; }).join("") + '</datalist></div>' +
+      '<div><label class="lab">Observações</label><textarea class="field" id="f_notes" rows="3" placeholder="Suas anotações, trechos favoritos, o que você achou…">' + esc(form.notes) + '</textarea></div>' +
     '</div><div class="modal-foot"><button class="btn btn-ghost" id="cancelBtn">Cancelar</button><button class="btn btn-primary" id="saveBtn">' + (book ? "Salvar alterações" : "Salvar ficha") + "</button></div></div></div>";
 
   document.getElementById("ov").addEventListener("click", function (e) { if (e.target.id === "ov") closeForm(); });
@@ -515,6 +567,8 @@ async function submitForm() {
     end_date: document.getElementById("f_end").value || "",
     rating: form.rating || 0, cover: form.cover || "",
     favorite_character: document.getElementById("f_fav").value.trim(),
+    genre: document.getElementById("f_genre").value.trim(),
+    notes: document.getElementById("f_notes").value.trim(),
     created_at: form.created_at || new Date().toISOString()
   };
   var btn = document.getElementById("saveBtn"); btn.disabled = true; btn.textContent = "Salvando…";
@@ -548,8 +602,12 @@ document.getElementById("tabSignup").onclick = function () { setAuthMode("signup
 document.getElementById("authSubmit").onclick = doAuth;
 document.getElementById("authPass").addEventListener("keydown", function (e) { if (e.key === "Enter") doAuth(); });
 document.getElementById("addBtn").onclick = function () { openForm(null); };
+var searchEl = document.getElementById("searchInput");
+if (searchEl) searchEl.addEventListener("input", function () { search = this.value; renderGrid(); });
 document.getElementById("filters").addEventListener("click", function (e) { var p = e.target.closest("[data-filter]"); if (!p) return; filter = p.getAttribute("data-filter"); render(); });
 document.getElementById("grid").addEventListener("click", function (e) {
+  var gt = e.target.closest("[data-genre]");
+  if (gt) { genreFilter = gt.getAttribute("data-genre"); render(); return; }
   var ed = e.target.closest("[data-edit]"), dl = e.target.closest("[data-del]");
   if (ed) { var b = books.filter(function (x) { return x.id === ed.getAttribute("data-edit"); })[0]; if (b) openForm(b); }
   else if (dl) confirmDelete(dl.getAttribute("data-del"));
